@@ -28,6 +28,7 @@ import com.scwang.refreshlayout.activity.practice.WebViewPracticeActivity;
 import com.scwang.refreshlayout.activity.practice.WeiboPracticeActivity;
 import com.scwang.refreshlayout.adapter.BaseRecyclerAdapter;
 import com.scwang.refreshlayout.adapter.SmartViewHolder;
+import com.scwang.refreshlayout.fragment.practice.InstantPracticeFragment;
 import com.scwang.refreshlayout.fragment.practice.SecondFloorPracticeFragment;
 import com.scwang.refreshlayout.util.StatusBarUtil;
 
@@ -40,7 +41,7 @@ import static android.support.v7.widget.DividerItemDecoration.VERTICAL;
  * 实战演示
  * A simple {@link Fragment} subclass.
  */
-public class RefreshPractiveFragment extends Fragment implements AdapterView.OnItemClickListener {
+public class RefreshPracticeFragment extends Fragment implements AdapterView.OnItemClickListener {
 
     private enum Item {
         Repast(R.string.index_practice_repast, RepastPracticeActivity.class),
@@ -52,6 +53,7 @@ public class RefreshPractiveFragment extends Fragment implements AdapterView.OnI
         QQBrowser(R.string.index_practice_qq_browser, QQBrowserPracticeActivity.class),
 //        TwoLevel("二级刷新", SecondFloorPracticeFragment.class),
         SecondFloor(R.string.index_practice_second_floor, SecondFloorPracticeFragment.class),
+        Instant(R.string.index_practice_instant, InstantPracticeFragment.class)
         ;
         @StringRes
         public int name;

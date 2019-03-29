@@ -13,14 +13,14 @@ import android.view.MenuItem;
 
 import com.scwang.refreshlayout.R;
 import com.scwang.refreshlayout.fragment.index.RefreshExampleFragment;
-import com.scwang.refreshlayout.fragment.index.RefreshPractiveFragment;
+import com.scwang.refreshlayout.fragment.index.RefreshPracticeFragment;
 import com.scwang.refreshlayout.fragment.index.RefreshStylesFragment;
 import com.scwang.refreshlayout.util.StatusBarUtil;
 
 public class IndexMainActivity extends AppCompatActivity implements OnNavigationItemSelectedListener {
 
     private enum TabFragment {
-        practice(R.id.navigation_practice, RefreshPractiveFragment.class),
+        practice(R.id.navigation_practice, RefreshPracticeFragment.class),
         styles(R.id.navigation_style, RefreshStylesFragment.class),
         using(R.id.navigation_example, RefreshExampleFragment.class),
         ;
@@ -68,10 +68,10 @@ public class IndexMainActivity extends AppCompatActivity implements OnNavigation
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_index_main);
 
-        final BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
+        final BottomNavigationView navigation = findViewById(R.id.navigation);
         navigation.setOnNavigationItemSelectedListener(this);
 
-        ViewPager viewPager = (ViewPager) findViewById(R.id.content);
+        ViewPager viewPager = findViewById(R.id.content);
         viewPager.setAdapter(new FragmentStatePagerAdapter(getSupportFragmentManager()) {
             @Override
             public int getCount() {
@@ -101,7 +101,7 @@ public class IndexMainActivity extends AppCompatActivity implements OnNavigation
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        ((ViewPager) findViewById(R.id.content)).setCurrentItem(TabFragment.from(item.getItemId()).ordinal());
+        ((ViewPager)findViewById(R.id.content)).setCurrentItem(TabFragment.from(item.getItemId()).ordinal());
 //        getSupportFragmentManager()
 //                .beginTransaction()
 //                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)

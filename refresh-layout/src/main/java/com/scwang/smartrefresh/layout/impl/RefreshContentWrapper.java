@@ -29,7 +29,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static com.scwang.smartrefresh.layout.util.ScrollBoundaryUtil.canScrollDown;
 import static com.scwang.smartrefresh.layout.util.ScrollBoundaryUtil.canScrollUp;
 import static com.scwang.smartrefresh.layout.util.ScrollBoundaryUtil.isTransformedTouchPointInView;
-import static com.scwang.smartrefresh.layout.util.SmartUtil.isScrollableView;
+import static com.scwang.smartrefresh.layout.util.SmartUtil.isContentView;
 import static com.scwang.smartrefresh.layout.util.SmartUtil.measureViewHeight;
 import static com.scwang.smartrefresh.layout.util.SmartUtil.scrollListBy;
 
@@ -43,7 +43,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
 //    protected int mHeaderHeight = Integer.MAX_VALUE;
 //    protected int mFooterHeight = mHeaderHeight - 1;
     protected View mContentView;//直接内容视图
-    protected View mRealContentView;//被包裹的原真实视图
+    protected View mOriginalContentView;//被包裹的原真实视图
     protected View mScrollableView;
     protected View mFixedHeader;
     protected View mFixedFooter;
@@ -54,7 +54,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
     protected ScrollBoundaryDeciderAdapter mBoundaryAdapter = new ScrollBoundaryDeciderAdapter();
 
     public RefreshContentWrapper(@NonNull View view) {
-        this.mContentView = mRealContentView = mScrollableView = view;
+        this.mContentView = mOriginalContentView = mScrollableView = view;
     }
 
     //<editor-fold desc="findScrollableView">
@@ -89,7 +89,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
         while (!views.isEmpty() && scrollableView == null) {
             View view = views.poll();
             if (view != null) {
-                if ((selfable || view != content) && isScrollableView(view)) {
+                if ((selfable || view != content) && isContentView(view)) {
                     scrollableView = view;
                 } else if (view instanceof ViewGroup) {
                     ViewGroup group = (ViewGroup) view;
@@ -110,7 +110,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
             for (int i = childCount; i > 0; i--) {
                 View child = viewGroup.getChildAt(i - 1);
                 if (isTransformedTouchPointInView(viewGroup, child, event.x, event.y, point)) {
-                    if (child instanceof ViewPager || !isScrollableView(child)) {
+                    if (child instanceof ViewPager || !isContentView(child)) {
                         event.offset(point.x, point.y);
                         child = findScrollableViewByPoint(child, event, orgScrollableView);
                         event.offset(-point.x, -point.y);
@@ -139,7 +139,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
     public void moveSpinner(int spinner, int headerTranslationViewId, int footerTranslationViewId) {
         boolean translated = false;
         if (headerTranslationViewId != View.NO_ID) {
-            View headerTranslationView = mRealContentView.findViewById(headerTranslationViewId);
+            View headerTranslationView = mOriginalContentView.findViewById(headerTranslationViewId);
             if (headerTranslationView != null) {
                 if (spinner > 0) {
                     translated = true;
@@ -150,7 +150,7 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
             }
         }
         if (footerTranslationViewId != View.NO_ID) {
-            View footerTranslationView = mRealContentView.findViewById(footerTranslationViewId);
+            View footerTranslationView = mOriginalContentView.findViewById(footerTranslationViewId);
             if (footerTranslationView != null) {
                 if (spinner < 0) {
                     translated = true;
@@ -161,9 +161,9 @@ public class RefreshContentWrapper implements RefreshContent , CoordinatorLayout
             }
         }
         if (!translated) {
-            mRealContentView.setTranslationY(spinner);
+            mOriginalContentView.setTranslationY(spinner);
         } else {
-            mRealContentView.setTranslationY(0);
+            mOriginalContentView.setTranslationY(0);
         }
         if (mFixedHeader != null) {
             mFixedHeader.setTranslationY(Math.max(0, spinner));
