@@ -4,7 +4,7 @@
 [![Arsenal](https://img.shields.io/badge/Arsenal%20-%20SmartRefresh-4cae4c.svg)](https://android-arsenal.com/details/1/6001)
 [![JCenter](https://img.shields.io/badge/%20Jcenter%20-1.1.0-5bc0de.svg)](https://bintray.com/scwang90/maven/SmartRefreshLayout/_latestVersion)
 [![MinSdk](https://img.shields.io/badge/%20MinSdk%20-%2012%2B%20-f0ad4e.svg)](https://android-arsenal.com/api?level=12)
-[![Methods](https://img.shields.io/badge/Methods%20%7C%20Size%20-%20901%20%7C%20122%20KB-d9534f.svg)](http://www.methodscount.com/?lib=com.scwang.smartrefresh%3ASmartRefreshLayout%3A1.1.0)
+[![Methods](https://img.shields.io/badge/Methods%20%7C%20Size%20-%20823%20%7C%20122%20KB-d9534f.svg)](http://www.methodscount.com/?lib=com.scwang.smartrefresh%3ASmartRefreshLayout%3A1.1.0)
 
 ## English | [中文](README.md)
 
@@ -98,13 +98,14 @@ Please rest assured that I have divided it into three packages, when used to ref
 ## Usage
 #### 1.Add a gradle dependency.
 ```
-compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-21'
-compile 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-alpha-21'//If you use the special Header
-compile 'com.android.support:appcompat-v7:25.3.1'
+implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-25'
+implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-alpha-25'//If you use the special Header
+implementation 'com.android.support:appcompat-v7:25.3.1'
 
 //androidx version
-implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-andx-4'
-implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-andx-4'
+implementation 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-andx-8'
+implementation 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-andx-8'
+implementation 'androidx.legacy:legacy-support-v4:1.0.0'
 
 ```
 
@@ -223,6 +224,7 @@ If in the donation message note name, it will be record to the list
 [Donation list](art/md_donationlist.md)
 
 #### blogroll
+[github/Bamboy120315/Freedom](https://github.com/Bamboy120315/Freedom)  
 [github/TommyLemon/APIJSON](https://github.com/TommyLemon/APIJSON)  
 [github/dengyuhan](https://github.com/dengyuhan)  
 [github/zrp2017](https://github.com/zrp2017)  
