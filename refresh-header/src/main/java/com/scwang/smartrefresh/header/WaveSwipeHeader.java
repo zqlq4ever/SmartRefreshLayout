@@ -4,9 +4,7 @@ import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
@@ -27,7 +25,7 @@ import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.constant.RefreshState;
 import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
 import com.scwang.smartrefresh.layout.internal.InternalAbstract;
-import com.scwang.smartrefresh.layout.util.DensityUtil;
+import com.scwang.smartrefresh.layout.util.SmartUtil;
 
 import static android.view.View.MeasureSpec.EXACTLY;
 import static android.view.View.MeasureSpec.getSize;
@@ -35,7 +33,7 @@ import static android.view.View.MeasureSpec.makeMeasureSpec;
 
 /**
  * 水滴下拉头
- * Created by SCWANG on 2017/6/4.
+ * Created by scwang on 2017/6/4.
  * from https://github.com/recruit-lifestyle/WaveSwipeRefreshLayout
  */
 @SuppressWarnings("unused")
@@ -67,11 +65,7 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
     }
 
     public WaveSwipeHeader(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public WaveSwipeHeader(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(context, attrs, 0);
 
         mSpinnerStyle = SpinnerStyle.MatchLayout;
 
@@ -125,12 +119,9 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
         circleView.layout((thisWidth - circleWidth) / 2, -circleHeight , (thisWidth + circleWidth) / 2, 0);
 
         if (thisView.isInEditMode()) {
-            onMoving(true, 0.99f, DensityUtil.dp2px(99), DensityUtil.dp2px(100), DensityUtil.dp2px(100));
-//            onPulling(0.99f, DensityUtil.dp2px(99), DensityUtil.dp2px(100), DensityUtil.dp2px(100));
+            onMoving(true, 0.99f, SmartUtil.dp2px(99), SmartUtil.dp2px(100), SmartUtil.dp2px(100));
         }
     }
-
-
     //</editor-fold>
 
     //<editor-fold desc="WaveSwipe">
@@ -155,7 +146,6 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
     //</editor-fold>
 
     //<editor-fold desc="RefreshHeader">
-
     @Override
     public void onMoving(boolean isDragging, float percent, int offset, int height, int maxDragHeight) {
         if (isDragging) {
@@ -211,52 +201,6 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
         }
     }
 
-//    @Override
-//    public void onPulling(float percent, int offset, int height, int maxDragHeight) {
-//
-//        if (mState == RefreshState.Refreshing) {
-//            return;
-//        }
-//
-//        float dragPercent = Math.min(1f, percent);
-//        float adjustedPercent = (float) Math.max(dragPercent - .4, 0) * 5 / 3;
-//
-//        // 0f...2f
-//        float tensionSlingshotPercent =
-//                (percent > 3f) ? 2f : (percent > 1f) ? percent - 1f : 0;
-//        float tensionPercent = (4f - tensionSlingshotPercent) * tensionSlingshotPercent / 8f;
-//
-//        if (percent < 1f) {
-//            float strokeStart = adjustedPercent * .8f;
-//            mProgress.setStartEndTrim(0f, Math.min(MAX_PROGRESS_ROTATION_RATE, strokeStart));
-//            mProgress.setArrowScale(Math.min(1f, adjustedPercent));
-//        }
-//
-//        float rotation = (-0.25f + .4f * adjustedPercent + tensionPercent * 2) * .5f;
-//        mProgress.setProgressRotation(rotation);
-//        mCircleView.setTranslationY(mWaveView.getCurrentCircleCenterY());
-//
-//        float seed = 1f * offset / Math.min(getMeasuredWidth(), getMeasuredHeight());
-//        float firstBounds = seed * (5f - 2 * seed) / 3.5f;
-//        float secondBounds = firstBounds - VERTICAL_DRAG_THRESHOLD.FIRST.val;
-//        float finalBounds = (firstBounds - VERTICAL_DRAG_THRESHOLD.SECOND.val) / 5;
-//        mLastFirstBounds = firstBounds;
-//
-//        if (firstBounds < VERTICAL_DRAG_THRESHOLD.FIRST.val) {
-//            // draw a wave and not draw a circle
-//            mWaveView.beginPhase(firstBounds);
-//        } else if (firstBounds < VERTICAL_DRAG_THRESHOLD.SECOND.val) {
-//            // draw a circle with a wave
-//            mWaveView.appearPhase(firstBounds, secondBounds);
-//        } else /*if (firstBounds < VERTICAL_DRAG_THRESHOLD.THIRD.val)*/ {
-//            // draw a circle with expanding a wave
-//            mWaveView.expandPhase(firstBounds, secondBounds, finalBounds);
-////        } else {
-////            // stop to draw a wave and drop a circle
-////            onDropPhase();
-//        }
-//    }
-
     @Override
     public void onReleased(@NonNull RefreshLayout layout, int height, int maxDragHeight) {
         mLastFirstBounds = 0;
@@ -283,6 +227,8 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
         mState = newState;
         switch (newState) {
             case None:
+            case ReleaseToRefresh:
+            case Refreshing:
                 break;
             case PullDownToRefresh:
                 mProgress.showArrow(true);
@@ -296,10 +242,6 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
                 mProgress.setStartEndTrim(0f, 0f);
                 mWaveView.startWaveAnimation(mLastFirstBounds);
                 mLastFirstBounds = 0;
-                break;
-            case ReleaseToRefresh:
-                break;
-            case Refreshing:
                 break;
         }
     }
@@ -342,12 +284,7 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
             }
         }
     }
-//
-//    @NonNull
-//    @Override
-//    public SpinnerStyle getSpinnerStyle() {
-//        return SpinnerStyle.MatchLayout;
-//    }
+
     //</editor-fold>
 
     //<editor-fold desc="ProgressAnimationImageView">
@@ -409,7 +346,7 @@ public class WaveSwipeHeader extends InternalAbstract implements RefreshHeader {
         public ProgressAnimationImageView(Context context) {
             super(context);
             mProgress = new MaterialProgressDrawable(WaveSwipeHeader.this);
-            mProgress.setBackgroundColor(Color.TRANSPARENT);
+//            mProgress.setBackgroundColor(Color.TRANSPARENT);
             if (isOver600dp()) { // Make the progress be big
                 mProgress.updateSizes(MaterialProgressDrawable.LARGE);
             }

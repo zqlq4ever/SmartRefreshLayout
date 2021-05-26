@@ -15,34 +15,35 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 
 import com.scwang.smartrefresh.layout.api.RefreshHeader;
+import com.scwang.smartrefresh.layout.api.RefreshKernel;
 import com.scwang.smartrefresh.layout.api.RefreshLayout;
 import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
 import com.scwang.smartrefresh.layout.internal.InternalAbstract;
-import com.scwang.smartrefresh.layout.util.DensityUtil;
+import com.scwang.smartrefresh.layout.util.SmartUtil;
 
 /**
  * CircleRefresh
- * Created by zhanglei on 15/7/18.
+ * Created by scwang on 20187/18.
  * from https://github.com/tuesda/CircleRefreshLayout
  */
 public class BezierCircleHeader extends InternalAbstract implements RefreshHeader {
 
     //<editor-fold desc="Field">
-
     protected Path mPath;
     protected Paint mBackPaint;
     protected Paint mFrontPaint;
     protected Paint mOuterPaint;
+    protected int mHeight;
     protected float mWaveHeight;
     protected float mHeadHeight;
     protected float mSpringRatio;
     protected float mFinishRatio;
 
     protected float mBollY;//弹出球体的Y坐标
+    protected float mBollRadius;//球体半径
+    protected boolean mShowOuter;
     protected boolean mShowBoll;//是否显示中心球体
     protected boolean mShowBollTail;//是否显示球体拖拽的尾巴
-    protected boolean mShowOuter;
-    protected float mBollRadius;//球体半径
 
     protected int mRefreshStop = 90;
     protected int mRefreshStart = 90;
@@ -50,25 +51,20 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
 
     protected static final int TARGET_DEGREE = 270;
     protected boolean mWavePulling = false;
-
+    protected RefreshKernel mKernel;
     //</editor-fold>
 
     //<editor-fold desc="View">
-
     public BezierCircleHeader(Context context) {
         this(context, null);
     }
 
     public BezierCircleHeader(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
+        super(context, attrs, 0);
 
-    public BezierCircleHeader(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
-
-        mSpinnerStyle = SpinnerStyle.Scale;
+        mSpinnerStyle = SpinnerStyle.FixedBehind;
         final View thisView = this;
-        thisView.setMinimumHeight(DensityUtil.dp2px(100));
+        thisView.setMinimumHeight(SmartUtil.dp2px(100));
         mBackPaint = new Paint();
         mBackPaint.setColor(0xff11bbff);
         mBackPaint.setAntiAlias(true);
@@ -79,19 +75,26 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         mOuterPaint.setAntiAlias(true);
         mOuterPaint.setColor(0xffffffff);
         mOuterPaint.setStyle(Paint.Style.STROKE);
-        mOuterPaint.setStrokeWidth(DensityUtil.dp2px(2f));
+        mOuterPaint.setStrokeWidth(SmartUtil.dp2px(2f));
         mPath = new Path();
     }
-
     //</editor-fold>
 
     //<editor-fold desc="Draw">
-
     @Override
     protected void dispatchDraw(Canvas canvas) {
         final View thisView = this;
         final int viewWidth = thisView.getWidth();
-        final int viewHeight = thisView.getHeight();
+        final int viewHeight = mHeight;//thisView.getHeight();
+        //noinspection EqualsBetweenInconvertibleTypes
+        final boolean footer = mKernel != null && (this.equals(mKernel.getRefreshLayout().getRefreshFooter()));
+
+        if (footer) {
+            canvas.save();
+            canvas.translate(0, thisView.getHeight());
+            canvas.scale(1, -1);
+        }
+
         if (thisView.isInEditMode()) {
             mShowBoll = true;
             mShowOuter = true;
@@ -107,10 +110,14 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         drawOuter(canvas, viewWidth);
         drawFinish(canvas, viewWidth);
 
+        if (footer) {
+            canvas.restore();
+        }
+
         super.dispatchDraw(canvas);
     }
 
-    private void drawWave(Canvas canvas, int viewWidth, int viewHeight) {
+    protected void drawWave(Canvas canvas, int viewWidth, int viewHeight) {
         float baseHeight = Math.min(mHeadHeight, viewHeight);
         if (mWaveHeight != 0) {
             mPath.reset();
@@ -124,7 +131,7 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         }
     }
 
-    private void drawSpringUp(Canvas canvas, int viewWidth) {
+    protected void drawSpringUp(Canvas canvas, int viewWidth) {
         if (mSpringRatio > 0) {
             float leftX = (viewWidth / 2f - 4 * mBollRadius + mSpringRatio * 3 * mBollRadius);
             if (mSpringRatio < 0.9) {
@@ -139,7 +146,7 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         }
     }
 
-    private void drawBoll(Canvas canvas, int viewWidth) {
+    protected void drawBoll(Canvas canvas, int viewWidth) {
         if (mShowBoll) {
             canvas.drawCircle(viewWidth / 2f, mBollY, mBollRadius, mFrontPaint);
 
@@ -147,7 +154,7 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         }
     }
 
-    private void drawBollTail(Canvas canvas, int viewWidth, float fraction) {
+    protected void drawBollTail(Canvas canvas, int viewWidth, float fraction) {
         if (mShowBollTail) {
             final float bottom = mHeadHeight + mWaveHeight;
             final float startY = mBollY + mBollRadius * fraction / 2;
@@ -164,7 +171,7 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         }
     }
 
-    private void drawOuter(Canvas canvas, int viewWidth) {
+    protected void drawOuter(Canvas canvas, int viewWidth) {
         if (mShowOuter) {
             float outerR = mBollRadius + mOuterPaint.getStrokeWidth() * 2;
 
@@ -189,7 +196,7 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
 
     }
 
-    private void drawFinish(Canvas canvas, int viewWidth) {
+    protected void drawFinish(Canvas canvas, int viewWidth) {
         if (mFinishRatio > 0) {
             int beforeColor = mOuterPaint.getColor();
             if (mFinishRatio < 0.3) {
@@ -224,34 +231,24 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
             }
         }
     }
-
     //</editor-fold>
 
     //<editor-fold desc="RefreshHeader">
-
+    @Override
+    public void onInitialized(@NonNull RefreshKernel kernel, int height, int maxDragHeight) {
+        mKernel = kernel;
+    }
 
     @Override
     public void onMoving(boolean isDragging, float percent, int offset, int height, int maxDragHeight) {
+        mHeight = offset;
         if (isDragging || mWavePulling) {
             mWavePulling = true;
             mHeadHeight = height;
             mWaveHeight = Math.max(offset - height, 0) * .8f;
         }
+        this.invalidate();
     }
-
-//    @Override
-//    public void onPulling(float percent, int offset, int height, int maxDragHeight) {
-//        mWavePulling = true;
-//        mHeadHeight = height;
-//        mWaveHeight = Math.max(offset - height, 0) * .8f;
-//    }
-//
-//    @Override
-//    public void onReleasing(float percent, int offset, int height, int maxDragHeight) {
-//        if (mWavePulling) {
-//            onPulling(percent, offset, height, maxDragHeight);
-//        }
-//    }
 
     @Override
     public void onReleased(@NonNull RefreshLayout refreshLayout, int height, int maxDragHeight) {
@@ -354,10 +351,5 @@ public class BezierCircleHeader extends InternalAbstract implements RefreshHeade
         }
     }
 
-//    @NonNull
-//    @Override
-//    public SpinnerStyle getSpinnerStyle() {
-//        return SpinnerStyle.Scale;
-//    }
     //</editor-fold>
 }

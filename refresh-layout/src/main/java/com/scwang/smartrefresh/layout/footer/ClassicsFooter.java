@@ -7,7 +7,6 @@ import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.animation.LinearInterpolator;
 
 import com.scwang.smartrefresh.layout.R;
 import com.scwang.smartrefresh.layout.api.RefreshFooter;
@@ -17,14 +16,13 @@ import com.scwang.smartrefresh.layout.constant.SpinnerStyle;
 import com.scwang.smartrefresh.layout.internal.ArrowDrawable;
 import com.scwang.smartrefresh.layout.internal.InternalClassics;
 import com.scwang.smartrefresh.layout.internal.ProgressDrawable;
-import com.scwang.smartrefresh.layout.util.DensityUtil;
+import com.scwang.smartrefresh.layout.util.SmartUtil;
 
 /**
  * 经典上拉底部组件
- * Created by SCWANG on 2017/5/28.
+ * Created by scwang on 2017/5/28.
  */
-
-@SuppressWarnings({"unused", "UnusedReturnValue", "deprecation"})
+@SuppressWarnings({"unused", "UnusedReturnValue"})
 public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements RefreshFooter {
 
     public static String REFRESH_FOOTER_PULLING = null;//"上拉加载更多";
@@ -51,19 +49,13 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
     }
 
     public ClassicsFooter(Context context, AttributeSet attrs) {
-        this(context, attrs, 0);
-    }
-
-    public ClassicsFooter(Context context, AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+        super(context, attrs, 0);
 
         View.inflate(context, R.layout.srl_classics_footer, this);
-
 
         final View thisView = this;
         final View arrowView = mArrowView = thisView.findViewById(R.id.srl_classics_arrow);
         final View progressView = mProgressView = thisView.findViewById(R.id.srl_classics_progress);
-        final DensityUtil density = new DensityUtil();
 
         mTitleText = thisView.findViewById(R.id.srl_classics_title);
 
@@ -71,7 +63,7 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
 
         LayoutParams lpArrow = (LayoutParams) arrowView.getLayoutParams();
         LayoutParams lpProgress = (LayoutParams) progressView.getLayoutParams();
-        lpProgress.rightMargin = ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlDrawableMarginRight, density.dip2px(20));
+        lpProgress.rightMargin = ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlDrawableMarginRight, SmartUtil.dp2px(20));
         lpArrow.rightMargin = lpProgress.rightMargin;
 
         lpArrow.width = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableArrowSize, lpArrow.width);
@@ -85,7 +77,7 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
         lpProgress.height = ta.getLayoutDimension(R.styleable.ClassicsFooter_srlDrawableSize, lpProgress.height);
 
         mFinishDuration = ta.getInt(R.styleable.ClassicsFooter_srlFinishDuration, mFinishDuration);
-        mSpinnerStyle = SpinnerStyle.values()[ta.getInt(R.styleable.ClassicsFooter_srlClassicsSpinnerStyle, mSpinnerStyle.ordinal())];
+        mSpinnerStyle = SpinnerStyle.values[ta.getInt(R.styleable.ClassicsFooter_srlClassicsSpinnerStyle, mSpinnerStyle.ordinal)];
 
         if (ta.hasValue(R.styleable.ClassicsFooter_srlDrawableArrow)) {
             mArrowView.setImageDrawable(ta.getDrawable(R.styleable.ClassicsFooter_srlDrawableArrow));
@@ -104,9 +96,7 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
         }
 
         if (ta.hasValue(R.styleable.ClassicsFooter_srlTextSizeTitle)) {
-            mTitleText.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlTextSizeTitle, DensityUtil.dp2px(16)));
-//        } else {
-//            mTitleText.setTextSize(16);
+            mTitleText.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimensionPixelSize(R.styleable.ClassicsFooter_srlTextSizeTitle, SmartUtil.dp2px(16)));
         }
 
         if (ta.hasValue(R.styleable.ClassicsFooter_srlPrimaryColor)) {
@@ -168,8 +158,7 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
 
         ta.recycle();
 
-//        mTitleText.setTextColor(0xff666666);
-        progressView.animate().setInterpolator(new LinearInterpolator());
+        progressView.animate().setInterpolator(null);
         mTitleText.setText(thisView.isInEditMode() ? mTextLoading : mTextPulling);
 
         if (thisView.isInEditMode()) {
@@ -179,27 +168,27 @@ public class ClassicsFooter extends InternalClassics<ClassicsFooter> implements 
         }
     }
 
-//    @Override
-//    protected ClassicsFooter self() {
-//        return this;
-//    }
-
     //</editor-fold>
 
     //<editor-fold desc="RefreshFooter">
-
-    @Override
-    public void onStartAnimator(@NonNull RefreshLayout refreshLayout, int height, int maxDragHeight) {
-        if (!mNoMoreData) {
-            super.onStartAnimator(refreshLayout, height, maxDragHeight);
-        }
-    }
+//    @Override
+//    public void onStartAnimator(@NonNull RefreshLayout refreshLayout, int height, int maxDragHeight) {
+//        if (!mNoMoreData) {
+//            super.onStartAnimator(refreshLayout, height, maxDragHeight);
+//        }
+//    }
 
     @Override
     public int onFinish(@NonNull RefreshLayout layout, boolean success) {
+        /*
+         * 2020-5-15 修复BUG
+         * https://github.com/scwang90/SmartRefreshLayout/issues/1003
+         * 修复 没有更多数据之后 loading 还在显示问题
+         */
+        super.onFinish(layout, success);
         if (!mNoMoreData) {
             mTitleText.setText(success ? mTextFinish : mTextFailed);
-            return super.onFinish(layout, success);
+            return mFinishDuration;
         }
         return 0;
     }
